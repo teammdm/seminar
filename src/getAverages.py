@@ -9,8 +9,8 @@ import argparse, sys
 def get_dict_of_permutations(kmerLength, alphabet = "ACTG"):
     seperator = ''
     perm = list(itertools.product(alphabet, repeat=5))
-    # return dict.fromkeys(map(lambda x: seperator.join(x), perm),[])
-    return dict.fromkeys(map(lambda x: seperator.join(x), perm),0)
+    return dict(map(lambda x: (seperator.join(x), []), perm))
+    # return dict.fromkeys(map(lambda x: seperator.join(x), perm),0)
 
 def make_avg_signal_dict_from_data(attrs, events, data, kmerLength = 5):
     dict = get_dict_of_permutations(kmerLength)
@@ -28,11 +28,11 @@ def make_avg_signal_dict_from_data(attrs, events, data, kmerLength = 5):
             #avg = avg + data[event[2]]
             avg = avg + avgForEvent
         avg = avg / kmerLength
-        # dict[kmer].append(avg)
-        if dict[kmer] == 0:
-            dict[kmer] = avg
-        else:
-            dict[kmer] = (dict[kmer] + avg)/2
+        dict[kmer].append(avg)
+        # if dict[kmer] == 0:
+        #     dict[kmer] = avg
+        # else:
+        #     dict[kmer] = (dict[kmer] + avg)/2
         
         nuc_legnth = events[eventIndex][3]
         nuc = str(events[eventIndex][4])[2:3]
@@ -41,12 +41,14 @@ def make_avg_signal_dict_from_data(attrs, events, data, kmerLength = 5):
         #     nuc_dict[nuc] = nuc_legnth
         # else:
         #     nuc_dict[nuc] = (nuc_dict[nuc] + nuc_legnth)/2
-    # for key in dict: 
-    #     if len(dict[key]) == 0:
-    #         dict[key] = 0
-    #     else:
-    #         dict[key] = statistics.mean(dict[key])
-    return (dict,nuc_dict)
+    distributions = {}
+    for key in dict:
+        if len(dict[key]) == 0:
+            distributions[key] = (0,0)
+        else:
+            print(dict[key])
+            distributions[key] = (np.mean(dict[key]), np.std(dict[key]))
+    return (distributions,nuc_dict)
 
 parser=argparse.ArgumentParser()
 
@@ -81,7 +83,7 @@ read = reads[list(reads.keys())[0]]
 signal = read[list(read.keys())[0]]
 
 avgsDict, nucDict = make_avg_signal_dict_from_data(alignmentAttrs, events, signal)
-# print(nucDict)
+print(avgsDict)
 for key in nucDict:
     std = np.std(nucDict[key])
     mean = np.mean(nucDict[key])

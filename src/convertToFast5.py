@@ -9,11 +9,12 @@ import argparse, sys
 def get_dict_of_permutations(kmerLength, alphabet = "ACTG"):
     seperator = ''
     perm = list(itertools.product(alphabet, repeat=5))
-    # return dict.fromkeys(map(lambda x: seperator.join(x), perm),[])
-    return dict.fromkeys(map(lambda x: seperator.join(x), perm),(0))
+    return dict(map(lambda x: (seperator.join(x), []), perm))
+    # return dict.fromkeys(map(lambda x: seperator.join(x), perm),0)
 
 def make_avg_signal_dict_from_data(attrs, events, data, kmerLength = 5):
     dict = get_dict_of_permutations(kmerLength)
+    nuc_dict = {"A":[], "C":[], "T":[], "G":[]} 
     start = attrs['mapped_start']
     # end = attrs['mapped_end']
     for eventIndex in range(0, len(events)-5):
@@ -27,17 +28,20 @@ def make_avg_signal_dict_from_data(attrs, events, data, kmerLength = 5):
             #avg = avg + data[event[2]]
             avg = avg + avgForEvent
         avg = avg / kmerLength
-        # dict[kmer].append(avg)
-        if dict[kmer] == 0:
-            dict[kmer] = avg
+        dict[kmer].append(avg)
+        
+        nuc_legnth = events[eventIndex][3]
+        nuc = str(events[eventIndex][4])[2:3]
+        nuc_dict[nuc].append(nuc_legnth)
+
+    distributions = {}
+    for key in dict:
+        if len(dict[key]) == 0:
+            distributions[key] = (0,0)
         else:
-            dict[kmer] = (dict[kmer] + avg)/2
-    # for key in dict: 
-    #     if len(dict[key]) == 0:
-    #         dict[key] = 0
-    #     else:
-    #         dict[key] = statistics.mean(dict[key])
-    return dict
+            print(dict[key])
+            distributions[key] = (np.mean(dict[key]), np.std(dict[key]))
+    return (distributions,nuc_dict)
 
 def convert_fasta_sequence_to_signal(sequence, dict):
     signal = []
@@ -86,8 +90,8 @@ reads = raw[list(raw.keys())[0]]
 read = reads[list(reads.keys())[0]]
 signal = read[list(read.keys())[0]]
 
-avgsDict = make_avg_signal_dict_from_data(alignmentAttrs, events, signal)
-print(avgsDict)
+(distributionDict, nucDict) = make_avg_signal_dict_from_data(alignmentAttrs, events, signal)
+avgsDict = dict(map(lambda kv: (kv[0], kv[1][0]), distributionDict.items()))
 converted_signal = convert_fasta_sequence_to_signal(sequences[0].seq, avgsDict)
 print(converted_signal)
 # plt.bar(range(len(avgsDict)), list(avgsDict.values()), align='center')
