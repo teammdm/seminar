@@ -59,10 +59,10 @@ print(args)
 
 #FAST5
 fast5_filename = args.fast5_filename
+filename = 'db6b45aa-5d21-45cf-a435-05fb8f12e839.fast5'
 if fast5_filename is not None:
     print(fast5_filename)
     filename = fast5_filename
-filename = 'db6b45aa-5d21-45cf-a435-05fb8f12e839.fast5'
 f = h5py.File(filename, 'r')
 keys = list(f.keys())
 
