@@ -53,6 +53,7 @@ parser=argparse.ArgumentParser()
 
 parser.add_argument('--fasta-filename', help='Path to fasta file')
 parser.add_argument('--fast5-filename', help='Path to fast5 file')
+parser.add_argument('--fastq-filename', help='Path to fastq file')
 parser.add_argument('--plot', help='Whether to plot the results or not')
 args=parser.parse_args()
 print(args)
@@ -69,9 +70,13 @@ keys = list(f.keys())
 #FASTA
 fasta_filename = "../genomic_reference.fasta"
 fasta_filename_arg = args.fasta_filename
+fastq_filename = args.fastq_filename
 if fasta_filename_arg is not None:
-    print(fasta_filename_arg)
     fasta_filename = fasta_filename_arg
+elif fastq_filename is not None:
+    fasta_filename = fastq_filename[:-5] + ,'fasta'
+    SeqIO.convert(fastq_filename,'fastq',fasta_filename,'fasta')
+print(fasta_filename)
 fasta_sequences = SeqIO.parse(open(fasta_filename),'fasta')
 sequences = list(fasta_sequences)
 
