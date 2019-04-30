@@ -53,25 +53,30 @@ parser=argparse.ArgumentParser()
 
 parser.add_argument('--fasta-filename', help='Path to fasta file')
 parser.add_argument('--fast5-filename', help='Path to fast5 file')
+parser.add_argument('--fastq-filename', help='Path to fastq file')
 parser.add_argument('--plot', help='Whether to plot the results or not')
 args=parser.parse_args()
 print(args)
 
 #FAST5
 fast5_filename = args.fast5_filename
+filename = 'db6b45aa-5d21-45cf-a435-05fb8f12e839.fast5'
 if fast5_filename is not None:
     print(fast5_filename)
     filename = fast5_filename
-filename = 'db6b45aa-5d21-45cf-a435-05fb8f12e839.fast5'
 f = h5py.File(filename, 'r')
 keys = list(f.keys())
 
 #FASTA
 fasta_filename = "../genomic_reference.fasta"
 fasta_filename_arg = args.fasta_filename
+fastq_filename = args.fastq_filename
 if fasta_filename_arg is not None:
-    print(fasta_filename_arg)
     fasta_filename = fasta_filename_arg
+elif fastq_filename is not None:
+    fasta_filename = fastq_filename[:-5] + 'fasta'
+    SeqIO.convert(fastq_filename,'fastq',fasta_filename,'fasta')
+print(fasta_filename)
 fasta_sequences = SeqIO.parse(open(fasta_filename),'fasta')
 sequences = list(fasta_sequences)
 
