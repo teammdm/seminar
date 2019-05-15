@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package bio;
+
+message Event {
+    double norm_mean = 1;
+    double norm_stdev = 2;
+    uint32 start = 3;
+    uint32 lenght = 4;
+    string base = 5;
+    
+    message SignalSample {
+        repeated uint32 discrete_values = 1;
+        repeated double current_values = 2;
+    }
+
+    repeated SignalSample samples = 6;
+}
+
+message Fast5Info {
+    double lower_lim = 1;
+    string norm_type = 2;
+    double outlier_threshold = 3;
+    bool rna = 4;
+    double scale = 5;
+    double shift = 6;
+    double signal_match_score = 7;
+    string status = 8;
+    double upper_lim = 9;
+
+    string channel_number = 10;
+    double digitisation = 11;
+    double offset = 12;
+    double range = 13;
+    double sampling_rate = 14;
+
+}
+
+message ResquiggleInfo {
+    sint64 clipped_bases_end;
+    sint64 clipped_bases_start;
+    string mapped_chrom;
+    sint64 mapped_end;
+    sint64 mapped_start;
+    string mapped_strand;
+    sint64 num_deletions;
+    sint64 num_insertions;
+}

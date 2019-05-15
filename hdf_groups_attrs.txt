@@ -1,0 +1,101 @@
+###############################################
+LEGENDA:
+A 	-> Attribute
+G 	-> Group
+D 	-> DATASET
+GX	-> Dominik rekoa da bi trebali vracati generalne info
+RX	-> Dominik rekao da bi trebali vracati info o resquiggleu
+GX? -> Vjerojatno zeli pod generalni info, al nije receno
+###############################################
+
+
+A "file_version"
+G "Analyses"
+	G "Basecall_1D_000"
+		D "Fastq"													
+	G "RawGenomeCorrected_000"
+		A "basecall_group"
+		A "tombo_version"
+		G "Basecalled_template"								
+			A "lower_lim"											GX
+			A "norm_Type"											GX	
+			A "outlier_threshold"									GX
+			A "rna"													GX
+			A "scale"												GX
+			A "shift"												GX
+			A "signal_match_score"									GX
+			A "status"												GX
+			A "upper_lim"											GX
+			G "Alignment"	
+				A "clipped_bases_end"								RX
+				A "clipped_bases_start"								RX
+				A "mapped_chrom"									RX
+				A "mapped_end"										RX
+				A "mapped_start"									RX
+				A "mapped_strand"									RX
+				A "num_deletions"									RX
+				A "num_insertions"									RX
+				A "num_matches"										RX
+				A "num_mismatches"									RX
+			D "Events"
+G "Raw"
+	G "Reads"
+		G "Read_90479"
+			A "duration"											GX?
+			A "median_before"										GX?
+			A "read_id"												GX?
+			A "read_number"											GX?
+			A "start_mux"											GX?
+			A "start_time"											GX?
+			D "Signal"
+
+G "UniqueGlobalKey"
+	G "channel_id"
+		A "channel_number"											GX
+		A "digitisation"											GX
+		A "offset"													GX
+		A "range"													GX
+		A "sampling_rate"											GX
+	G "context_tags"
+		A "basecall_config_filename"
+		A "experiment_duration_set"
+		A "experiment_type"
+		A "fast5_output_fastq_in_hdf"
+		A "fast5_raw"
+		A "fast5_read_per_folder"
+		A "fastq_enabled"
+		A "fastq_reads_per_file"
+		A "filename"
+		A "flowcell_type"
+		A "kit_classification"
+		A "local_basecalling"
+		A "sample_frequency"
+		A "sequencing_kit"
+		A "user_filename_input"
+	G "tracking_id"
+		A "asic_id"
+		A "asic_id_eeprom"
+		A "asic_temp"
+		A "asic_version"
+		A "auto_update"
+		A "auto_update_source"
+		A "bream_is_standard"
+		A "device_id"
+		A "device_type"
+		A "distribution_status"
+		A "distribution_version"
+		A "exp_script_name"
+		A "exp_script_purpose"
+		A "exp_start_time"
+		A "flow_cell_id"
+		A "heatsink_temp"
+		A "hostname"
+		A "installation_type"
+		A "local_firmware_file"
+		A "operating_system"
+		A "protocol_run_id"
+		A "protocols_version"
+		A "run_id"
+		A "sample_id"
+		A "usb_config"
+		A "version"
