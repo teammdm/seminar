@@ -5,6 +5,8 @@ import io
 import h5py
 from queue import Queue
 
+import signal_pb2
+
 class ResquiggledFAST5():
     """ <2do> dokumentacija"""
 
@@ -18,6 +20,9 @@ class ResquiggledFAST5():
         self._key_dict_flat = dict()
         self._generate_key_dict()
         self._sequence = None
+        self._events = None
+        self._add_conversion_data()
+
 
     def get_fasta(self):
         """Returns fasta reads read within the fast5 file.
@@ -32,6 +37,7 @@ class ResquiggledFAST5():
         """
         return self._extract_file_format('Fasta')
     
+
     def get_fastq(self):
         """Returns fastq reads read within the fast5 file.
 
@@ -45,20 +51,37 @@ class ResquiggledFAST5():
         """
         return self._extract_file_format('Fastq')
     
-    def get_fast5(self):
-        """Returns fast5 read values associated with the current file.
+
+    #TODO
+    def get_signal_discrete(self):
+        """Returns all discrete signal values associated with the current file.
       
         Parameters
         ---------- 
 
         Returns
         -------
-        fast5
-            Fast5 readings from file ((FORMAT TBD))
+        signal : np.array
+            Discrete signal signal values from file 
         """
-       
         pass
-    
+
+
+    #TODO
+    def get_signal_continuos(self):
+        """Returns all continuous/raw signal values associated with the current file.
+      
+        Parameters
+        ---------- 
+
+        Returns
+        -------
+        signal : np.array
+            Continuous/ras signal values from file 
+        """
+        pass
+        
+
     def get_nucleotide_positions(self, nucleotide):
         """Returns all indices of positions where the specified nucleotide has been detected.
         
@@ -72,9 +95,16 @@ class ResquiggledFAST5():
         indices : numpy.array
             Numpy vector containing the indices.
         """
+        events = self.get_events()
+        indices = []
+        for event in events:
+            if event.base == nucleotide:
+                indices += [i for i in range(event.start, event.start + event.length)]
 
-        pass
+        return np.array(indices)
 
+
+    #TODO
     def get_kmer_positions(self, kmer):
         """Returns all indices of positions where the specified kmer has been detected.
         
@@ -90,6 +120,7 @@ class ResquiggledFAST5():
         """
         pass
 
+
     def get_nucleotide_intervals(self, nucleotide):
         """Returns all start and end indices of intervals where the specified nucleotide has been detected.
         
@@ -102,10 +133,19 @@ class ResquiggledFAST5():
         Returns
         -------
         indices : numpy.array
-            Numpy vector containing the indices.
+            Numpy array containing the indices.
         """
-        pass
+        events = self.get_events()
+        indices = []
+        for event in events:
+            if event.base == nucleotide:
+                indices.append((event.start, event.start + event.length))
 
+        return np.array(indices)
+
+
+
+    #TODO
     def get_kmer_intervals(self, kmer):
         """Returns all start and end indices of intervals where the specified kmer has been detected.
         
@@ -121,7 +161,8 @@ class ResquiggledFAST5():
         """
         pass
     
-    def get_nucleotide_mean_sd(self, nuclotide):
+
+    def get_nucleotide_mean_stdev(self, nuclotide):
         """Returns mean and standard deviation of the specified nucleotide in the signal.
         
         Parameters
@@ -133,10 +174,24 @@ class ResquiggledFAST5():
         Returns
         -------
         params : tuple
-            Tuple of format (mean, std_dev)
+            Tuple of format (mean, stdev)
         """
-        pass
+         events = self.get_events()
+        
+        mean_sum = 0.0
+        stdev_sum = 0.0
+        counter = 0
 
+        for event in events:
+            if event.base == nucleotide:
+                mean_sum  += event.norm_mean
+                stdev_sum += event.norm_stdev
+                counter   += 1
+
+        return (mean_sum / counter, stdev_sum / counter)
+
+
+    #TODO
     def get_kmer_mean_sd(self, kmer):
         """Returns mean and standard deviation of the specified kmer in the signal.
         
@@ -153,6 +208,7 @@ class ResquiggledFAST5():
         """
         pass
 
+
     def get_nucleotide_average_duration(self, nucleotide):
         """Returns average duration of the specified nucleotide in the signal.
         
@@ -167,8 +223,20 @@ class ResquiggledFAST5():
         duration : float
             Duration of nucleotide
         """
-        pass
-    
+        events = self.get_events()
+        
+        duration_sum = 0
+        counter = 0
+
+        for event in events:
+            if event.base == nucleotide:
+                duration_sum += event.length
+                counter      += 1
+
+        return float(duration_sum) / counter
+
+
+    #TODO
     def get_kmer_average_duration(self, kmer):
         """Returns average duration of the specified kmer in the signal.
         
@@ -184,8 +252,196 @@ class ResquiggledFAST5():
             Duration of kmer
         """
         pass
+
+
+    @staticmethod
+    def _create_Event(norm_mean, norm_stdev, start, length, base):
+        """MOVE TO SEPARATE FILE"""
+        event = signal_pb2.Event()
+       
+        event.norm_mean  = norm_mean
+        event.norm_stdev = norm_stdev
+        event.start      = start
+        event.length     = length
+        event.base       = base
+        
+        return event
+
+    @staticmethod
+    def _create_ResquiggleInfo(attrs):
+        """MOVE TO SEPARATE FILE"""
+        info = signal_pb2.ResquiggleInfo()
+        
+        info.clipped_bases_end   = int(attrs['clipped_bases_end'])
+        info.clipped_bases_start = int(attrs['clipped_bases_start'])
+        info.mapped_chrom        = attrs['mapped_chrom']
+        info.mapped_end          = int(attrs['mapped_end'])
+        info.mapped_start        = int(attrs['mapped_start'])
+        info.mapped_strand       = attrs['mapped_strand']
+        info.num_deletions       = int(attrs['num_deletions'])
+        info.num_insertions      = int(attrs['num_insertions'])
+        info.num_matches         = int(attrs['num_matches'])
+        info.num_mismatches      = int(attrs['num_mismatches'])
+       
+        return info
+
+    @staticmethod
+    def _create_Fast5Info(template_attrs, channel_id_attrs):
+        """MOVE TO SEPARATE FILE"""
+        info = signal_pb2.Fast5Info()
+       
+        info.lower_lim          = float(template_attrs['lower_lim'])
+        info.norm_type          = template_attrs['norm_type']
+        info.outlier_threshold = float(template_attrs['outlier_threshold'])
+        info.rna                = bool(template_attrs['rna'])
+        info.scale              = float(template_attrs['scale'])
+        info.shift              = float(template_attrs['shift'])
+        info.signal_match_score = float(template_attrs['signal_match_score'])
+        info.status             = template_attrs['status']
+        info.upper_lim          = float(template_attrs['upper_lim'])
+
+        info.channel_number     = channel_id_attrs['channel_number']
+        info.digitisation       = float(channel_id_attrs['digitisation'])
+        info.offset             = float(channel_id_attrs['offset'])
+        info.range              = float(channel_id_attrs['range'])
+        info.sampling_rate      = float(channel_id_attrs['sampling_rate'])
+
+        return info
+
+    @staticmethod
+    def _serialize_Message(message, path):
+        """MOVE TO SEPARATE FILE"""
+        f = open(path, "wb")
+        f.write(message.serializeToString())
+        f.close()
+        return 
+
+
+    def get_resquiggle_info(self):
+        """Returns resquiggle information as ResquiggleInfo object.
+
+        Parameters
+        ----------
+
+        Return
+        info : ResquiggleInfo
+            Object containing the information as object variables
+        """
+        attrs = self._key_dict_flat['Alignment'].attrs
+        return ResquiggledFAST5._create_ResquiggleInfo(attrs)
+
+
+    def get_general_info(self):
+        """Returns general information about the sequence as well as tombo parameters 
+        as a Fast5Info object.
+
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        info : Fast5Info
+
+        """
+        template_attrs = self._key_dict_flat['BaseCalled_template'].attrs
+        channel_id_attrs = self._key_dict_flat['channel_id'].attrs
+        return ResquiggledFAST5._create_Fast5Info(template_attrs, channel_id_attrs)
+
+
+    #TODO
+    def get_events(self):
+        """Returns all Event objects in sequential order associated with the fast5 file.
+        
+        Parameters
+        ----------
+
+        Returns
+        -------
+        events : [Event] ili numpy.array
+            All events in sequential order
+
+        """
+        if self._events is not None:
+            return self._events
+
+        alignment = self._key_dict_flat['BaseCalled_template']
+        events = np.array(alignment.get('Events'))                              # events is a vector of shape (x, ) 
+
+        events_list = []
+        for row in events:
+            events_list.append(ResquiggledFAST5._create_Event(*row))
     
+        self._events = np.array(events_list)
+
+        return self._events
+
+
+    def _convert_to_raw(self, signals):
+        """Converts given np.array of discrete (int) signals in to their continuous/raw (float) counterparts.
+
+        Parameters
+        ----------
+        signals : np.array
+            Array of discrete signals
+        
+        Returns
+        -------
+        raw_signals : np.array
+            Array of raw/continuous signals
+        """
+        return np.vectorize(self._convert_single_to_raw, signals)
+
+
+    def _convert_single_to_raw(self, disc_signal):
+        """Helper function which converts a discrete signal into a continuous/raw one.
+        The transformation is given by the following formula:
+            (disc_signal + offset) / raw_unit
+        where raw_unit is computed as:
+            raw_unit = range / digitisation
+        
+        Offset, range and digitisation are all parameters specified in the fast5 file.
+        
+        Parameters
+        ----------
+        disc_signal : int
+            Discrete representation of signal value
+
+        Returns
+        -------
+        cont_signal : float
+            Continuous representation of signal value
+        """
+        return (disc_signal + self._offset) / self._raw_unit 
+
+
+    def _add_conversion_data(self):
+        """Reads variables needed for signal conversion (digitisation, offset and range) into instance variables.
+        
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        attrs = self._key_dict_flat['channel_id'].attrs
+        self._digitisation = float(attrs['digitisation'])
+        self._offset       = float(attrs['offset'])
+        self._range        = float(attrs['range'])
+        self._raw_unit     = self._range / self._digitisation
+
+
     def _generate_key_dict(self):
+        """Generates key dictionary for accessing all groups in fast5 file for easier access in other methods.
+        Two dictionaries are generated:
+            _key_dict_flat : (key string) -> (HDF5 group object)
+            _key_dict_hierarchical : (HDF5 group object) -> ([key string])
+
+        Parameters
+        ----------
+
+        Returns 
+        -------
+        """
         queue = Queue()
         queue.put(self._file_handle)
 
@@ -207,23 +463,42 @@ class ResquiggledFAST5():
         print("Hierarchical dict representation")        
         for key, value in self._key_dict_hierarchical.items():
             print(key, value)
-
+        print(" ")
         print("Flat dict representation: ")
         
         for key, value in self._key_dict_flat.items():
             print(key, value)
-        """
+        #"""
 
         return
 
 
     def _extract_file_format(self, file_format):
+        """Extracts the specified file format from fast5 file. If no file with the specified format is found,
+        an Error is raised.
+
+        Parameters
+        ----------
+        file_format : string
+            File format as string.
+
+        Returns
+        -------
+        seq : Bio.Seq.Seq
+            Sequence object representation of the specified file format.
+
+
+        Raises
+        ------
+        KeyError
+            Raised if there is no file with the specified format
+        """
         result = None
         
         try:
-            fastq_dataset = self._key_dict_flat[file_format]
-            fastq_string = fastq_dataset[()]
-            result = list(SeqIO.parse(io.StringIO(fastq_string), file_format.lower()))
+            dataset = self._key_dict_flat[file_format]
+            string = dataset[()]
+            result = list(SeqIO.parse(io.StringIO(string), file_format.lower()))
 
         except KeyError as key_error:
             print("This fast5 file does not contain a {} file.".format(file_format.lower()))

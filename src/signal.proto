@@ -6,12 +6,11 @@ message Event {
     double norm_mean = 1;
     double norm_stdev = 2;
     uint32 start = 3;
-    uint32 lenght = 4;
+    uint32 length = 4;
     string base = 5;
     
     message SignalSample {
-        repeated uint32 discrete_values = 1;
-        repeated double current_values = 2;
+        repeated double cont_values = 1;
     }
 
     repeated SignalSample samples = 6;
@@ -37,12 +36,15 @@ message Fast5Info {
 }
 
 message ResquiggleInfo {
-    sint64 clipped_bases_end;
-    sint64 clipped_bases_start;
-    string mapped_chrom;
-    sint64 mapped_end;
-    sint64 mapped_start;
-    string mapped_strand;
-    sint64 num_deletions;
-    sint64 num_insertions;
+    sint64 clipped_bases_end = 1;
+    sint64 clipped_bases_start = 2;
+    string mapped_chrom = 3;
+    sint64 mapped_end = 4;
+    sint64 mapped_start = 5;
+    string mapped_strand = 6;
+    sint64 num_deletions = 7;
+    sint64 num_insertions = 8;
+    sint64 num_matches = 9;
+    sint64 num_mismatches = 10;
+
 }
