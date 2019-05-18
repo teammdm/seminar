@@ -21,6 +21,8 @@ class ResquiggledFAST5():
         self._generate_key_dict()
         self._sequence = None
         self._events = None
+        self._discrete_signal = None
+        self._continous_signal = None
         self._add_conversion_data()
 
 
@@ -52,7 +54,6 @@ class ResquiggledFAST5():
         return self._extract_file_format('Fastq')
     
 
-    #TODO
     def get_signal_discrete(self):
         """Returns all discrete signal values associated with the current file.
       
@@ -64,10 +65,16 @@ class ResquiggledFAST5():
         signal : np.array
             Discrete signal signal values from file 
         """
-        pass
+        if self._discrete_signal is not None:
+            return self._discrete_signal
 
+        signal = self._key_dict_flat['Signal']
+    
+        self._discrete_signal = np.array(signal)
 
-    #TODO
+        return self._discrete_signal
+
+        
     def get_signal_continuos(self):
         """Returns all continuous/raw signal values associated with the current file.
       
@@ -79,7 +86,20 @@ class ResquiggledFAST5():
         signal : np.array
             Continuous/ras signal values from file 
         """
-        pass
+        if self._continous_signal is not None:
+            return self._continous_signal
+
+        discrete_signal = self.get_signal_discrete()
+
+        info = self.get_general_info()
+        rng = info.range
+        digitisation = info.digitisation
+        raw_unit = rng / digitisation
+        offset = info.offset
+
+        self._continous_signal = np.array(list(map(lambda x: (x + offset) / raw_unit, discrete_signal)))
+    
+        return self._continous_signal
         
 
     def get_nucleotide_positions(self, nucleotide):
@@ -176,7 +196,7 @@ class ResquiggledFAST5():
         params : tuple
             Tuple of format (mean, stdev)
         """
-         events = self.get_events()
+        events = self.get_events()
         
         mean_sum = 0.0
         stdev_sum = 0.0
@@ -459,7 +479,7 @@ class ResquiggledFAST5():
             except AttributeError as attr_error:
                 continue
                 
-        """UNCOMMENT TO VIEW DICT ELEMENTS
+        #"""UNCOMMENT TO VIEW DICT ELEMENTS
         print("Hierarchical dict representation")        
         for key, value in self._key_dict_hierarchical.items():
             print(key, value)
@@ -498,7 +518,8 @@ class ResquiggledFAST5():
         try:
             dataset = self._key_dict_flat[file_format]
             string = dataset[()]
-            result = list(SeqIO.parse(io.StringIO(string), file_format.lower()))
+            result = list(SeqIO.parse(io.StringIO(string), file_format.lower()))    #for simple conversion
+                                                                                    #we can remove list 
 
         except KeyError as key_error:
             print("This fast5 file does not contain a {} file.".format(file_format.lower()))

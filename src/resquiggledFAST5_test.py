@@ -5,5 +5,7 @@ if __name__ == "__main__":
     print(f.get_nucleotide_positions.__doc__)
     #print(f.get_fastq())
     print(f.get_events())
+    print(f.get_signal_discrete())
+    print(f.get_signal_continuos())
     print(f.get_general_info())
     print(f.get_nucleotide_intervals('T'))
