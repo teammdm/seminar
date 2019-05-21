@@ -13,7 +13,7 @@ message Event {
         repeated double cont_values = 1;
     }
 
-    repeated SignalSample samples = 6;
+    SignalSample samples = 6;
 }
 
 message Fast5Info {

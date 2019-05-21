@@ -6,6 +6,7 @@ import h5py
 from queue import Queue
 
 import signal_pb2
+import nanopolish_pb2
 
 class ResquiggledFAST5():
     """ <2do> dokumentacija"""
@@ -21,6 +22,7 @@ class ResquiggledFAST5():
         self._generate_key_dict()
         self._sequence = None
         self._events = None
+        self._nanopolish_events = None
         self._discrete_signal = None
         self._continous_signal = None
         self._add_conversion_data()
@@ -286,6 +288,22 @@ class ResquiggledFAST5():
         event.base       = base
         
         return event
+    
+    @staticmethod
+    def _create_nanopolish_event(events, index):
+        """MOVE TO SEPARATE FILE"""
+        event_nano = nanopolish_pb2.Event()
+        event = events[0]
+       
+        event_nano.index = index
+        event_nano.level_mean = event.norm_mean
+        event_nano.stdv = event.norm_stdev
+        event_nano.length = event.length
+        event_nano.start_idx = event.start
+        event_nano.samples = event.samples.cont_values
+        event_nano.standardized_level = event.norm_mean
+        
+        return event
 
     @staticmethod
     def _create_ResquiggleInfo(attrs):
@@ -367,8 +385,30 @@ class ResquiggledFAST5():
         channel_id_attrs = self._key_dict_flat['channel_id'].attrs
         return ResquiggledFAST5._create_Fast5Info(template_attrs, channel_id_attrs)
 
+    def get_nanopolish_events(self):
+        """Returns all Event objects in sequential order associated with the fast5 file converted to nanopolish output.
+        
+        Parameters
+        ----------
 
-    #TODO
+        Returns
+        -------
+        events : [Event] ili numpy.array
+            All events in sequential order
+
+        """
+        if self._nanopolish_events is not None:
+            return self._nanopolish_events
+
+        events = self.get_events()
+        nano_events = []
+        for i in range(len(events)-6):
+            nano_events.append(self._create_nanopolish_event(events[i:i+6], i))
+
+        self._nanopolish_events = nano_events
+        return self._nanopolish_events
+        
+
     def get_events(self):
         """Returns all Event objects in sequential order associated with the fast5 file.
         
@@ -385,11 +425,17 @@ class ResquiggledFAST5():
             return self._events
 
         alignment = self._key_dict_flat['BaseCalled_template']
-        events = np.array(alignment.get('Events'))                              # events is a vector of shape (x, ) 
+        events = np.array(alignment.get('Events'))
+        signal = self.get_signal_continuos()                            # events is a vector of shape (x, ) 
 
         events_list = []
         for row in events:
-            events_list.append(ResquiggledFAST5._create_Event(*row))
+            event = ResquiggledFAST5._create_Event(*row)
+            sample = signal_pb2.Event.SignalSample()
+            sample.cont_values = signal[event.start:(event.start+event.length)]
+            event.samples = sample
+            events_list.append(event)
+            
     
         self._events = np.array(events_list)
 
