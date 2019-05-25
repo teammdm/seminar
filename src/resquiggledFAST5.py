@@ -290,21 +290,35 @@ class ResquiggledFAST5():
         return event
     
     @staticmethod
-    def _create_nanopolish_event(events, index):
+    def _create_nanopolish_event(events, index, resquiggle_info):
         """MOVE TO SEPARATE FILE"""
-        event_nano = nanopolish_pb2.Event()
+        event_nano = nanopolish_pb2.Evennorm_stdev
         event = events[0]
-       
-        event_nano.index = index
+        increasing = (resquiggle_info.mapped_start < resquiggle_info.mapped_end)
+
+        #could also be clipped_bases_start, end
+        event_nano.index = (resquiggle_info.mapped_start + index) if increasing  else (resquiggle_info.mapped_start - index)
         event_nano.level_mean = event.norm_mean
         event_nano.stdv = event.norm_stdev
         event_nano.length = event.length
         event_nano.start_idx = event.start
         event_nano.samples = event.samples.cont_values
         event_nano.standardized_level = event.norm_mean
-        
-        return event
 
+        event_align = nanopolish_pb2.EventAlign()
+        event_align.contig = "" #TODO
+        event_align.position = index
+        event_align.reference_kmer = string.join(list(map(lambda x: x.base, events[0:6])))
+        event_align.read_index = 0 #TODO
+        event_align.strand = resquiggle_info.mapped_strand == '+'
+
+        #either model or reference is from Analyses.BaseCall
+        #event_align.model_kmer = resquiggle_info.mapped_chrom[event.start:(event.start + event.length)] #TODO
+        event_align.model_mean = np.average(list(map(lambda x: x.norm_mean, events[0:6])))
+        event_align.model_stdv = np.average(list(map(lambda x: x.norm_stdev, events[0:6])))
+        event_align.events = [event]
+
+        return event_align
     @staticmethod
     def _create_ResquiggleInfo(attrs):
         """MOVE TO SEPARATE FILE"""
@@ -403,7 +417,7 @@ class ResquiggledFAST5():
         events = self.get_events()
         nano_events = []
         for i in range(len(events)-6):
-            nano_events.append(self._create_nanopolish_event(events[i:i+6], i))
+            nano_events.append(self._create_nanopolish_event(events[i:i+6], i, self.get_resquiggle_info()))
 
         self._nanopolish_events = nano_events
         return self._nanopolish_events
