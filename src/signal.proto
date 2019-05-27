@@ -8,12 +8,8 @@ message Event {
     uint32 start = 3;
     uint32 length = 4;
     string base = 5;
-    
-    message SignalSample {
-        repeated double cont_values = 1;
-    }
 
-    SignalSample samples = 6;
+    repeated double samples = 6;
 }
 
 message Fast5Info {

@@ -290,9 +290,9 @@ class ResquiggledFAST5():
         return event
     
     @staticmethod
-    def _create_nanopolish_event(events, index, resquiggle_info):
+    def _create_nanopolish_event(events, index, resquiggle_info, aligns):
         """MOVE TO SEPARATE FILE"""
-        event_nano = nanopolish_pb2.Evennorm_stdev
+        event_nano = nanopolish_pb2.EventAlign.Event()
         event = events[0]
         increasing = (resquiggle_info.mapped_start < resquiggle_info.mapped_end)
 
@@ -302,21 +302,25 @@ class ResquiggledFAST5():
         event_nano.stdv = event.norm_stdev
         event_nano.length = event.length
         event_nano.start_idx = event.start
-        event_nano.samples = event.samples.cont_values
+        event_nano.samples.extend(event.samples)
         event_nano.standardized_level = event.norm_mean
 
-        event_align = nanopolish_pb2.EventAlign()
-        event_align.contig = "" #TODO
-        event_align.position = index
-        event_align.reference_kmer = string.join(list(map(lambda x: x.base, events[0:6])))
-        event_align.read_index = 0 #TODO
-        event_align.strand = resquiggle_info.mapped_strand == '+'
+        kmer = "".join(list(map(lambda x: x.base, events[0:6])))
+        if kmer not in aligns:
+            event_align = nanopolish_pb2.EventAlign()
+            event_align.contig = "" #TODO
+            event_align.position = index #maybe should change
+            event_align.read_index = 0 #TODO
+            event_align.model_kmer = kmer
+            event_align.strand = resquiggle_info.mapped_strand == '+'
+            aligns[kmer] = event_align
+        event_align = aligns[kmer]
 
         #either model or reference is from Analyses.BaseCall
         #event_align.model_kmer = resquiggle_info.mapped_chrom[event.start:(event.start + event.length)] #TODO
-        event_align.model_mean = np.average(list(map(lambda x: x.norm_mean, events[0:6])))
-        event_align.model_stdv = np.average(list(map(lambda x: x.norm_stdev, events[0:6])))
-        event_align.events = [event]
+        event_align.events.extend([event_nano])
+        event_align.model_mean = np.average(list(map(lambda x: x.level_mean, event_align.events)))
+        event_align.model_stdv = np.average(list(map(lambda x: x.stdv, event_align.events)))
 
         return event_align
     @staticmethod
@@ -416,8 +420,9 @@ class ResquiggledFAST5():
 
         events = self.get_events()
         nano_events = []
+        aligns = {}
         for i in range(len(events)-6):
-            nano_events.append(self._create_nanopolish_event(events[i:i+6], i, self.get_resquiggle_info()))
+            nano_events.append(self._create_nanopolish_event(events[i:i+6], i, self.get_resquiggle_info(), aligns))
 
         self._nanopolish_events = nano_events
         return self._nanopolish_events
@@ -445,9 +450,7 @@ class ResquiggledFAST5():
         events_list = []
         for row in events:
             event = ResquiggledFAST5._create_Event(*row)
-            sample = signal_pb2.Event.SignalSample()
-            sample.cont_values = signal[event.start:(event.start+event.length)]
-            event.samples = sample
+            event.samples.extend(signal[event.start:(event.start+event.length)])
             events_list.append(event)
             
     

@@ -9,3 +9,4 @@ if __name__ == "__main__":
     print(f.get_signal_continuos())
     print(f.get_general_info())
     print(f.get_nucleotide_intervals('T'))
+    print(f.get_nanopolish_events())
