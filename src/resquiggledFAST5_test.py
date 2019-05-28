@@ -1,7 +1,10 @@
 import resquiggledFAST5 as rs
-
+import sys
 if __name__ == "__main__":
-    f = rs.ResquiggledFAST5("./data/db6b45aa-5d21-45cf-a435-05fb8f12e839.fast5")
+    filename = "./data/dac.fast5"
+    if sys.argc > 1:
+        filename = sys.argv[1]
+    f = rs.ResquiggledFAST5(filename)
     print(f.get_nucleotide_positions.__doc__)
     #print(f.get_fastq())
     print(f.get_events())
