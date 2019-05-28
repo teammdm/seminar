@@ -2,7 +2,7 @@ import resquiggledFAST5 as rs
 import sys
 if __name__ == "__main__":
     filename = "./data/dac.fast5"
-    if sys.argc > 1:
+    if len(sys.argv) > 1:
         filename = sys.argv[1]
     f = rs.ResquiggledFAST5(filename)
     print(f.get_nucleotide_positions.__doc__)
