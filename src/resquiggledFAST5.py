@@ -99,7 +99,7 @@ class ResquiggledFAST5():
         raw_unit = rng / digitisation
         offset = info.offset
 
-        self._continous_signal = np.array(list(map(lambda x: (x + offset) / raw_unit, discrete_signal)))
+        self._continous_signal = np.array(list(map(lambda x: (x + offset) * raw_unit, discrete_signal)))
     
         return self._continous_signal
         
@@ -491,7 +491,7 @@ class ResquiggledFAST5():
         cont_signal : float
             Continuous representation of signal value
         """
-        return (disc_signal + self._offset) / self._raw_unit 
+        return (disc_signal + self._offset) * self._raw_unit 
 
 
     def _add_conversion_data(self):
@@ -508,7 +508,7 @@ class ResquiggledFAST5():
         self._offset       = float(attrs['offset'])
         self._range        = float(attrs['range'])
         self._raw_unit     = self._range / self._digitisation
-
+        #self._raw_unit = self._digitisation / self._range
 
     def _generate_key_dict(self):
         """Generates key dictionary for accessing all groups in fast5 file for easier access in other methods.
