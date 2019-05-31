@@ -20,41 +20,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='bio',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0csignal.proto\x12\x03\x62io\"\xaa\x01\n\x05\x45vent\x12\x11\n\tnorm_mean\x18\x01 \x01(\x01\x12\x12\n\nnorm_stdev\x18\x02 \x01(\x01\x12\r\n\x05start\x18\x03 \x01(\r\x12\x0e\n\x06length\x18\x04 \x01(\r\x12\x0c\n\x04\x62\x61se\x18\x05 \x01(\t\x12(\n\x07samples\x18\x06 \x01(\x0b\x32\x17.bio.Event.SignalSample\x1a#\n\x0cSignalSample\x12\x13\n\x0b\x63ont_values\x18\x01 \x03(\x01\"\x9a\x02\n\tFast5Info\x12\x11\n\tlower_lim\x18\x01 \x01(\x01\x12\x11\n\tnorm_type\x18\x02 \x01(\t\x12\x19\n\x11outlier_threshold\x18\x03 \x01(\x01\x12\x0b\n\x03rna\x18\x04 \x01(\x08\x12\r\n\x05scale\x18\x05 \x01(\x01\x12\r\n\x05shift\x18\x06 \x01(\x01\x12\x1a\n\x12signal_match_score\x18\x07 \x01(\x01\x12\x0e\n\x06status\x18\x08 \x01(\t\x12\x11\n\tupper_lim\x18\t \x01(\x01\x12\x16\n\x0e\x63hannel_number\x18\n \x01(\t\x12\x14\n\x0c\x64igitisation\x18\x0b \x01(\x01\x12\x0e\n\x06offset\x18\x0c \x01(\x01\x12\r\n\x05range\x18\r \x01(\x01\x12\x15\n\rsampling_rate\x18\x0e \x01(\x01\"\xfb\x01\n\x0eResquiggleInfo\x12\x19\n\x11\x63lipped_bases_end\x18\x01 \x01(\x12\x12\x1b\n\x13\x63lipped_bases_start\x18\x02 \x01(\x12\x12\x14\n\x0cmapped_chrom\x18\x03 \x01(\t\x12\x12\n\nmapped_end\x18\x04 \x01(\x12\x12\x14\n\x0cmapped_start\x18\x05 \x01(\x12\x12\x15\n\rmapped_strand\x18\x06 \x01(\t\x12\x15\n\rnum_deletions\x18\x07 \x01(\x12\x12\x16\n\x0enum_insertions\x18\x08 \x01(\x12\x12\x13\n\x0bnum_matches\x18\t \x01(\x12\x12\x16\n\x0enum_mismatches\x18\n \x01(\x12\x62\x06proto3')
+  serialized_pb=_b('\n\x0csignal.proto\x12\x03\x62io\"l\n\x05\x45vent\x12\x11\n\tnorm_mean\x18\x01 \x01(\x01\x12\x12\n\nnorm_stdev\x18\x02 \x01(\x01\x12\r\n\x05start\x18\x03 \x01(\r\x12\x0e\n\x06length\x18\x04 \x01(\r\x12\x0c\n\x04\x62\x61se\x18\x05 \x01(\t\x12\x0f\n\x07samples\x18\x06 \x03(\x01\"\x9a\x02\n\tFast5Info\x12\x11\n\tlower_lim\x18\x01 \x01(\x01\x12\x11\n\tnorm_type\x18\x02 \x01(\t\x12\x19\n\x11outlier_threshold\x18\x03 \x01(\x01\x12\x0b\n\x03rna\x18\x04 \x01(\x08\x12\r\n\x05scale\x18\x05 \x01(\x01\x12\r\n\x05shift\x18\x06 \x01(\x01\x12\x1a\n\x12signal_match_score\x18\x07 \x01(\x01\x12\x0e\n\x06status\x18\x08 \x01(\t\x12\x11\n\tupper_lim\x18\t \x01(\x01\x12\x16\n\x0e\x63hannel_number\x18\n \x01(\t\x12\x14\n\x0c\x64igitisation\x18\x0b \x01(\x01\x12\x0e\n\x06offset\x18\x0c \x01(\x01\x12\r\n\x05range\x18\r \x01(\x01\x12\x15\n\rsampling_rate\x18\x0e \x01(\x01\"\xfb\x01\n\x0eResquiggleInfo\x12\x19\n\x11\x63lipped_bases_end\x18\x01 \x01(\x12\x12\x1b\n\x13\x63lipped_bases_start\x18\x02 \x01(\x12\x12\x14\n\x0cmapped_chrom\x18\x03 \x01(\t\x12\x12\n\nmapped_end\x18\x04 \x01(\x12\x12\x14\n\x0cmapped_start\x18\x05 \x01(\x12\x12\x15\n\rmapped_strand\x18\x06 \x01(\t\x12\x15\n\rnum_deletions\x18\x07 \x01(\x12\x12\x16\n\x0enum_insertions\x18\x08 \x01(\x12\x12\x13\n\x0bnum_matches\x18\t \x01(\x12\x12\x16\n\x0enum_mismatches\x18\n \x01(\x12\x62\x06proto3')
 )
 
 
 
-
-_EVENT_SIGNALSAMPLE = _descriptor.Descriptor(
-  name='SignalSample',
-  full_name='bio.Event.SignalSample',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='cont_values', full_name='bio.Event.SignalSample.cont_values', index=0,
-      number=1, type=1, cpp_type=5, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=157,
-  serialized_end=192,
-)
 
 _EVENT = _descriptor.Descriptor(
   name='Event',
@@ -100,15 +70,15 @@ _EVENT = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='samples', full_name='bio.Event.samples', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=6, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[_EVENT_SIGNALSAMPLE, ],
+  nested_types=[],
   enum_types=[
   ],
   serialized_options=None,
@@ -117,8 +87,8 @@ _EVENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=22,
-  serialized_end=192,
+  serialized_start=21,
+  serialized_end=129,
 )
 
 
@@ -239,8 +209,8 @@ _FAST5INFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=195,
-  serialized_end=477,
+  serialized_start=132,
+  serialized_end=414,
 )
 
 
@@ -333,31 +303,21 @@ _RESQUIGGLEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=480,
-  serialized_end=731,
+  serialized_start=417,
+  serialized_end=668,
 )
 
-_EVENT_SIGNALSAMPLE.containing_type = _EVENT
-_EVENT.fields_by_name['samples'].message_type = _EVENT_SIGNALSAMPLE
 DESCRIPTOR.message_types_by_name['Event'] = _EVENT
 DESCRIPTOR.message_types_by_name['Fast5Info'] = _FAST5INFO
 DESCRIPTOR.message_types_by_name['ResquiggleInfo'] = _RESQUIGGLEINFO
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Event = _reflection.GeneratedProtocolMessageType('Event', (_message.Message,), dict(
-
-  SignalSample = _reflection.GeneratedProtocolMessageType('SignalSample', (_message.Message,), dict(
-    DESCRIPTOR = _EVENT_SIGNALSAMPLE,
-    __module__ = 'signal_pb2'
-    # @@protoc_insertion_point(class_scope:bio.Event.SignalSample)
-    ))
-  ,
   DESCRIPTOR = _EVENT,
   __module__ = 'signal_pb2'
   # @@protoc_insertion_point(class_scope:bio.Event)
   ))
 _sym_db.RegisterMessage(Event)
-_sym_db.RegisterMessage(Event.SignalSample)
 
 Fast5Info = _reflection.GeneratedProtocolMessageType('Fast5Info', (_message.Message,), dict(
   DESCRIPTOR = _FAST5INFO,
