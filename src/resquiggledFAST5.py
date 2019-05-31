@@ -290,34 +290,47 @@ class ResquiggledFAST5():
         return event
     
     @staticmethod
-    def _create_nanopolish_event(events, index, resquiggle_info, aligns):
+    def _create_nanopolish_event(events, index, resquiggle_info, fast5_info, aligns):
         """MOVE TO SEPARATE FILE"""
         event_nano = nanopolish_pb2.EventAlign.Event()
-        event = events[0]
+        event = events[3]
         increasing = (resquiggle_info.mapped_start < resquiggle_info.mapped_end)
 
         #could also be clipped_bases_start, end
         event_nano.index = (resquiggle_info.mapped_start + index) if increasing  else (resquiggle_info.mapped_start - index)
-        event_nano.level_mean = event.norm_mean
-        event_nano.stdv = event.norm_stdev
-        event_nano.length = event.length
+        event_nano.level_mean = np.average(list(map(lambda x: x, event.samples)))
+        event_nano.stdv = np.std(list(map(lambda x: x, event.samples)))
+        event_nano.length = event.length / fast5_info.sampling_rate
         event_nano.start_idx = event.start
+        event_nano.end_idx = event.start + event.length
         event_nano.samples.extend(event.samples)
         event_nano.standardized_level = event.norm_mean
 
         kmer = "".join(list(map(lambda x: x.base, events[0:6])))
         if kmer not in aligns:
             event_align = nanopolish_pb2.EventAlign()
-            event_align.contig = "" #TODO
-            event_align.position = index #maybe should change
+            event_align.contig = resquiggle_info.mapped_chrom
+            event_align.position = index
             event_align.read_index = 0 #TODO
-            event_align.model_kmer = kmer
+            event_align.reference_kmer = kmer
             event_align.strand = resquiggle_info.mapped_strand == '+'
             aligns[kmer] = event_align
         event_align = aligns[kmer]
 
+        def reverseComp(char):
+            if char == 'T':
+                return 'A'
+            if char == 'A':
+                return 'T'
+            if char == 'C':
+                return 'G'
+            if char == 'G':
+                return 'C'
         #either model or reference is from Analyses.BaseCall
-        #event_align.model_kmer = resquiggle_info.mapped_chrom[event.start:(event.start + event.length)] #TODO
+        if 'c' in resquiggle_info.mapped_chrom:
+            event_align.model_kmer = "".join(list(map(reverseComp, kmer[::-1])))
+        else:
+            event_align.model_kmer = kmer
         event_align.events.extend([event_nano])
         event_align.model_mean = np.average(list(map(lambda x: x.level_mean, event_align.events)))
         event_align.model_stdv = np.average(list(map(lambda x: x.stdv, event_align.events)))
@@ -422,7 +435,7 @@ class ResquiggledFAST5():
         nano_events = []
         aligns = {}
         for i in range(len(events)-6):
-            nano_events.append(self._create_nanopolish_event(events[i:i+6], i, self.get_resquiggle_info(), aligns))
+            nano_events.append(self._create_nanopolish_event(events[i:i+6], i, self.get_resquiggle_info(), self.get_general_info(), aligns))
 
         self._nanopolish_events = nano_events
         return self._nanopolish_events
