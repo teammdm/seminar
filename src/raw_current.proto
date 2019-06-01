@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package bio;
+
+message Current {
+    double digitisation = 1;
+    double offset = 2;
+    double range = 3;
+    double sampling_rate = 4;
+    
+    repeated double currents = 5;
+}

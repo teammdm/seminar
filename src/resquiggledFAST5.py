@@ -7,6 +7,7 @@ from queue import Queue
 
 import signal_pb2
 import nanopolish_pb2
+import raw_current_pb2
 
 class ResquiggledFAST5():
     """ <2do> dokumentacija"""
@@ -23,6 +24,7 @@ class ResquiggledFAST5():
         self._sequence = None
         self._events = None
         self._nanopolish_events = None
+        self._raw_current = None
         self._discrete_signal = None
         self._continous_signal = None
         self._add_conversion_data()
@@ -275,6 +277,19 @@ class ResquiggledFAST5():
         """
         pass
 
+    @staticmethod
+    def _create_raw_current(signal, fast5_info):
+        """MOVE TO SEPARATE FILE"""
+        curr = raw_current_pb2.Current()
+        
+        curr.digitisation = fast5_info.digitisation
+        curr.offset = fast5_info.offset
+        curr.range = fast5_info.range
+        curr.sampling_rate = fast5_info.sampling_rate
+        curr.currents.extend(signal)
+
+        return curr
+
 
     @staticmethod
     def _create_Event(norm_mean, norm_stdev, start, length, base):
@@ -293,11 +308,14 @@ class ResquiggledFAST5():
     def _create_nanopolish_event(events, index, resquiggle_info, fast5_info, aligns):
         """MOVE TO SEPARATE FILE"""
         event_nano = nanopolish_pb2.EventAlign.Event()
-        event = events[3]
+        event = events[5]
         increasing = (resquiggle_info.mapped_start < resquiggle_info.mapped_end)
 
         #could also be clipped_bases_start, end
         event_nano.index = (resquiggle_info.mapped_start + index) if increasing  else (resquiggle_info.mapped_start - index)
+        # event_nano.level_mean = np.average(list(map(lambda event: np.average(list(map(lambda x: x, event.samples))), events)))
+        # event_nano.stdv = np.average(list(map(lambda event: np.std(list(map(lambda x: x, event.samples))), events)))
+        # event_nano.length = np.average(list(map(lambda x: x.length / fast5_info.sampling_rate, events)))
         event_nano.level_mean = np.average(list(map(lambda x: x, event.samples)))
         event_nano.stdv = np.std(list(map(lambda x: x, event.samples)))
         event_nano.length = event.length / fast5_info.sampling_rate
@@ -439,6 +457,26 @@ class ResquiggledFAST5():
 
         self._nanopolish_events = nano_events
         return self._nanopolish_events
+
+    def get_raw_current_data(self):
+        """Returns Current object retrieved from the signal in the Fast5 file
+        
+        Parameters
+        ----------
+
+        Returns
+        -------
+        events : Current
+            Current file 
+
+        """
+        if self._raw_current is not None:
+            return self._raw_current
+
+        signal = self.get_signal_continuos()
+
+        self._raw_current = ResquiggledFAST5._create_raw_current(signal, self.get_general_info())
+        return self._raw_current
         
 
     def get_events(self):
