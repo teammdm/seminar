@@ -308,19 +308,19 @@ class ResquiggledFAST5():
     def _create_nanopolish_event(events, index, resquiggle_info, fast5_info, aligns):
         """MOVE TO SEPARATE FILE"""
         event_nano = nanopolish_pb2.EventAlign.Event()
-        event = events[5]
+        event = events[0]
         increasing = (resquiggle_info.mapped_start < resquiggle_info.mapped_end)
 
         #could also be clipped_bases_start, end
         event_nano.index = (resquiggle_info.mapped_start + index) if increasing  else (resquiggle_info.mapped_start - index)
-        # event_nano.level_mean = np.average(list(map(lambda event: np.average(list(map(lambda x: x, event.samples))), events)))
-        # event_nano.stdv = np.average(list(map(lambda event: np.std(list(map(lambda x: x, event.samples))), events)))
-        # event_nano.length = np.average(list(map(lambda x: x.length / fast5_info.sampling_rate, events)))
-        event_nano.level_mean = np.average(list(map(lambda x: x, event.samples)))
-        event_nano.stdv = np.std(list(map(lambda x: x, event.samples)))
-        event_nano.length = event.length / fast5_info.sampling_rate
-        event_nano.start_idx = event.start
-        event_nano.end_idx = event.start + event.length
+        event_nano.level_mean = np.average(list(map(lambda event: np.average(list(map(lambda x: x, event.samples))), events)))
+        event_nano.stdv = np.average(list(map(lambda event: np.std(list(map(lambda x: x, event.samples))), events)))
+        event_nano.length = np.average(list(map(lambda x: x.length / fast5_info.sampling_rate, events)))
+        # event_nano.level_mean = np.average(list(map(lambda x: x, event.samples)))
+        # event_nano.stdv = np.std(list(map(lambda x: x, event.samples)))
+        # event_nano.length = event.length / fast5_info.sampling_rate
+        event_nano.start_idx = resquiggle_info.mapped_start + event.start
+        event_nano.end_idx = resquiggle_info.mapped_start + event.start + event.length
         event_nano.samples.extend(event.samples)
         event_nano.standardized_level = event.norm_mean
 
@@ -452,8 +452,8 @@ class ResquiggledFAST5():
         events = self.get_events()
         nano_events = []
         aligns = {}
-        for i in range(len(events)-6):
-            nano_events.append(self._create_nanopolish_event(events[i:i+6], i, self.get_resquiggle_info(), self.get_general_info(), aligns))
+        for i in range(3,len(events)-3):
+            nano_events.append(self._create_nanopolish_event(events[i-3:i+3], i-3, self.get_resquiggle_info(), self.get_general_info(), aligns))
 
         self._nanopolish_events = nano_events
         return self._nanopolish_events

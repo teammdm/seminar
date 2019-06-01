@@ -13,4 +13,4 @@ if __name__ == "__main__":
     print(f.get_general_info())
     print(f.get_nucleotide_intervals('T'))
     print(f.get_nanopolish_events())
-    print(f.get_raw_current_data())
+    print(f.get_resquiggle_info().clipped_bases_start)
