@@ -308,7 +308,7 @@ class ResquiggledFAST5():
     def _create_nanopolish_event(events, index, resquiggle_info, fast5_info, aligns):
         """MOVE TO SEPARATE FILE"""
         event_nano = nanopolish_pb2.EventAlign.Event()
-        event = events[0]
+        event = events[5]
         increasing = (resquiggle_info.mapped_start < resquiggle_info.mapped_end)
 
         #could also be clipped_bases_start, end
